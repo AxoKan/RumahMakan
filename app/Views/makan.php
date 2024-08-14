@@ -37,7 +37,10 @@
   
            if (in_array($userLevel, $allowedLevels)) {
         ?> 
-                  <a href="<?= base_url("home/t_makan")?>">
+                  <a href="<?= base_url("home/RestoreM")?>">
+		<button class="btn btn-success">Restore</button>
+  </a>
+  <a href="<?= base_url("home/t_makan")?>">
 		<button class="btn btn-success">+ Tambah</button>
   </a>
   <?php } ?>

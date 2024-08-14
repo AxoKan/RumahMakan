@@ -45,7 +45,6 @@
                     <div class="row">
                         <div class="col-lg-10">
                             <div class="card">
-
                                 <div class="card-body">
                                     <h5 class="card-title"></h5>
 

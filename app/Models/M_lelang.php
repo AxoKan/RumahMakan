@@ -203,6 +203,18 @@ public function getActivityLogs() {
         return [];
     }
 }
+public function getProductById($id)
+{
+    return $this->db->table('menu')->where('id_menu', $id)->get()->getRow();
+}
 
+public function getMinumById($id)
+{
+    return $this->db->table('minuman')->where('id_minuman', $id)->get()->getRow();
+}
+public function getUserById($id)
+{
+    return $this->db->table('user')->where('id_user', $id)->get()->getRow();
+}
 
 }

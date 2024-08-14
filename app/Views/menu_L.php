@@ -159,19 +159,7 @@
     </a>
     </li>
     <?php } ?>
-    <?php
- $userLevel = session()->get('level');
- $allowedLevels = ['admin'];
-
- if (in_array($userLevel, $allowedLevels)) {
-?> 
-     <li class="menu-item <?php if($uri->getSegment(2) == "RestoreM" || $uri->getSegment(2) == "RestoreMI" || $uri->getSegment(2) == "RestoreUser"){echo "active";}?>">
-  <a href="<?= base_url("Home/RestoreM")?>" class="menu-link">
-      <i class="menu-icon tf-icons bx bx-food-menu me-1"></i>
-      <div data-i18n="Layouts">Restore</div>
-    </a>
-    </li>
-    <?php } ?>
+   
     <?php
  $userLevel = session()->get('level');
  $allowedLevels = ['Manager', 'admin'];

@@ -51,7 +51,16 @@
                   <input type="text" id="search" placeholder="Enter keywords...">
                 </div>
               </div>
-
+              <?php
+           $userLevel = session()->get('level');
+           $allowedLevels = ['admin'];
+  
+           if (in_array($userLevel, $allowedLevels)) {
+        ?> 
+               <a href="<?= base_url("home/RestoreUser")?>">
+		<button class="btn btn-success">Restore</button>
+  </a>
+  <?php } ?>
               <!-- Table with stripped rows -->
               <table class="table datatable" id="mitraTable">
                 <thead>

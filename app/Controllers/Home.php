@@ -879,12 +879,8 @@ echo view('footer_L');
 }
     }
     public function aksi_Medit()
-    {
-        $userLevel = session()->get('level');
-        $allowedLevels = ['Manager', 'admin'];
-    
-        if (in_array($userLevel, $allowedLevels)) {
-        $model = new M_lelang(); // Assuming you instantiate the model like this
+{
+    $model = new M_lelang(); // Assuming you instantiate the model like this
         $user_id = session()->get('id_user');
         // Retrieve data from the POST request
         $a = $this->request->getPost('nama');
@@ -892,29 +888,101 @@ echo view('footer_L');
         $c = $this->request->getPost('stok');
         $Kategory = $this->request->getPost('Kategory');
         $id = $this->request->getPost('id');
+
+    // Cek apakah ada data dengan id_produk yang sama di produk_backup
+    $backupWhere = ['id_menu' => $id];
+    $existingBackup = $model->getWhere('menu_Backup', $backupWhere);
+
+    if ($existingBackup) {
+        // Hapus data lama di produk_backup jika ada
+        $model->hapus('menu_Backup', $backupWhere);
+    }
+
+    // Ambil data produk lama berdasarkan id_produk
+    $produkLama = $model->getProductById($id);
+    
+    // Simpan data produk lama ke tabel produk_backup
+    $backupData = (array) $produkLama;  // Ubah objek menjadi array
+    $model->tambah('menu_Backup', $backupData);
+
+    // Menyiapkan data yang akan di-update
+    $isi = array(
+                'nama_menu' => $a,
+                'Kategory' =>  $Kategory,
+                'harga_menu' => $b,
+                'Soft' => 'Restore',
+                'stok' => $c
+            );
+
+    // Memeriksa apakah ada file foto baru
+    $model->logActivity($user_id, 'Menu', 'User Has Updated a Menu.');
+
+    // Update data produk di database
+    $where = array('id_menu' => $id);
+    $model->edit('menu', $isi, $where);
+
+    return redirect()->to('home/makan');
+}
+    // public function aksi_Medit()
+    // {
+    //     $userLevel = session()->get('level');
+    //     $allowedLevels = ['Manager', 'admin'];
+    
+    //     if (in_array($userLevel, $allowedLevels)) {
+    //     $model = new M_lelang(); // Assuming you instantiate the model like this
+    //     $user_id = session()->get('id_user');
+    //     // Retrieve data from the POST request
+    //     $a = $this->request->getPost('nama');
+    //     $b = $this->request->getPost('harga');
+    //     $c = $this->request->getPost('stok');
+    //     $Kategory = $this->request->getPost('Kategory');
+    //     $id = $this->request->getPost('id');
        
-        // Define the where clause
-        $where = array('id_menu' => $id);
+    //     // Define the where clause
+    //     $where = array('id_menu' => $id);
     
-        // Data to be updated
-        $isi = array(
-            'nama_menu' => $a,
-            'Kategory' =>  $Kategory,
-            'harga_menu' => $b,
-            'Soft' => 'Restore',
-            'stok' => $c
-        );
+    //     // Data to be updated
+    //     $isi = array(
+    //         'nama_menu' => $a,
+    //         'Kategory' =>  $Kategory,
+    //         'harga_menu' => $b,
+    //         'Soft' => 'Restore',
+    //         'stok' => $c
+    //     );
     
-        // Perform the update operation
-        $model->logActivity($user_id, 'Menu', 'User Has Updated a Menu.');
-        $model->edit('menu', $isi, $where);
+    //     // Perform the update operation
+    //     $model->logActivity($user_id, 'Menu', 'User Has Updated a Menu.');
+    //     $model->edit('menu', $isi, $where);
     
-        // Redirect to the desired page
-        return redirect()->to('Home/makan');
-    } else {
-        return redirect()->to('home/notfound');
+    //     // Redirect to the desired page
+    //     return redirect()->to('Home/makan');
+    // } else {
+    //     return redirect()->to('home/notfound');
+    // }
+    // }
+    public function Restore_E_menu($id)
+{
+    $model = new M_lelang();
+    
+    // Ambil data dari tabel produk_backup berdasarkan id_produk
+    $backupData = $model->getWhere('menu_Backup', ['id_menu' => $id]);
+
+    if ($backupData) {
+        // Konversi data backup menjadi array
+        $restoreData = (array) $backupData;
+
+        // Hapus id_produk dari array karena id_produk tidak perlu di-update
+        unset($restoreData['id_menu']);
+
+        // Update data di tabel produk dengan data dari produk_backup
+        $model->edit('menu', $restoreData, ['id_menu' => $id]);
+
+        // Hapus data dari tabel produk_backup setelah di-restore
+        $model->hapus('menu_Backup', ['id_menu' => $id]);
     }
-    }
+
+    return redirect()->to('home/hisproduk');
+}
     public function t_makan()
     {
         $userLevel = session()->get('level');
