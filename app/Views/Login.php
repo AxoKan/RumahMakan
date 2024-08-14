@@ -19,6 +19,48 @@
     <script src="<?=base_url('assets/js/config.js')?>"></script>
     <!-- Google reCAPTCHA API -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+    function validateForm() {
+      var backupCaptchaField = document.querySelector('input[name="backup_captcha"]');
+
+      if (navigator.onLine) {
+        var response = grecaptcha.getResponse();
+        if (response.length === 0) {
+          alert('Please complete the CAPTCHA.');
+          return false;
+        }
+        backupCaptchaField.removeAttribute('required');
+      } else {
+        backupCaptchaField.setAttribute('required', 'required');
+        var backupCaptcha = backupCaptchaField.value;
+        if (backupCaptcha === '') {
+          alert('Please complete the offline CAPTCHA.');
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+
+
+    function checkInternet() {
+    var backupCaptchaField = document.querySelector('input[name="backup_captcha"]');
+    if (!navigator.onLine) {
+        document.getElementById('offline-captcha').style.display = 'block';
+        document.querySelector('.g-recaptcha').style.display = 'none';
+        backupCaptchaField.removeAttribute('disabled');
+    } else {
+        document.getElementById('offline-captcha').style.display = 'none';
+        document.querySelector('.g-recaptcha').style.display = 'block';
+        backupCaptchaField.setAttribute('disabled', 'disabled');
+    }
+}
+
+window.addEventListener('load', checkInternet);
+window.addEventListener('online', checkInternet);
+window.addEventListener('offline', checkInternet);
+  </script>
 </head>
 <body>
     <div class="container-xxl">
@@ -48,9 +90,14 @@
                                 </div>
                             </div>
                             <!-- Google reCAPTCHA -->
-                            <div class="mb-3">
-                                <div class="g-recaptcha" data-sitekey="6LeAgCAqAAAAANyIFIQRqVWfiMIvf1SCnNVLVOST"></div>
-                            </div>
+                            <div class="g-recaptcha" data-sitekey="6LeAgCAqAAAAANyIFIQRqVWfiMIvf1SCnNVLVOST"></div>
+                <div id="offline-captcha" style="display:none;">
+                  <p>Please enter the characters shown below:</p>
+                  <img src="<?= base_url('Home/generateCaptcha') ?>" alt="CAPTCHA">
+
+                  <input type="text" name="backup_captcha" class="form-control mt-2" placeholder="Enter CAPTCHA" required>
+
+                </div>
                             <div class="mb-3">
                                 <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
                             </div>

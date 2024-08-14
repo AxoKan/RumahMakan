@@ -75,13 +75,19 @@
 
 <ul class="menu-inner py-1">
   <!-- Dashboard -->
+  <?php
+ $userLevel = session()->get('level');
+ $allowedLevels = ['Petugas', 'admin','manager','Koki'];
+
+ if (in_array($userLevel, $allowedLevels)) {
+?> 
   <li class="menu-item <?php if($uri->getSegment(2) == "dashboard_L"){echo "active";}?>">
     <a href="<?= base_url("Home/dashboard_L") ?>" class="menu-link">
       <i class="menu-icon tf-icons bx bx-home-circle"></i>
       <div data-i18n="Analytics">Dashboard</div>
     </a>
 </li>
-
+<?php } ?>
 
   <!-- Layouts -->
   <li class="menu-item">
@@ -150,6 +156,19 @@
   <a href="<?= base_url("Home/Laporan")?>" class="menu-link">
       <i class="menu-icon tf-icons bx bx-file"></i>
       <div data-i18n="Layouts">Laporan</div>
+    </a>
+    </li>
+    <?php } ?>
+    <?php
+ $userLevel = session()->get('level');
+ $allowedLevels = ['admin'];
+
+ if (in_array($userLevel, $allowedLevels)) {
+?> 
+     <li class="menu-item <?php if($uri->getSegment(2) == "RestoreM" || $uri->getSegment(2) == "RestoreMI" || $uri->getSegment(2) == "RestoreUser"){echo "active";}?>">
+  <a href="<?= base_url("Home/RestoreM")?>" class="menu-link">
+      <i class="menu-icon tf-icons bx bx-food-menu me-1"></i>
+      <div data-i18n="Layouts">Restore</div>
     </a>
     </li>
     <?php } ?>

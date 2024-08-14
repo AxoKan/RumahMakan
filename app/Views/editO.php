@@ -1,129 +1,243 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity Log</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Include Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .container {
-            margin-top: 30px;
-        }
-        .table thead th {
-            background-color: #007bff;
-            color: #ffffff;
-            text-align: center;
-        }
-        .table tbody tr:nth-child(odd) {
-            background-color: #e9ecef;
-        }
-        .table tbody tr:hover {
-            background-color: #d6d6d6;
-        }
-        .no-logs {
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
-        }
-        h2 {
-            color: #007bff;
-            margin-bottom: 20px;
-        }
-        .card {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .card-header {
-            background-color: #007bff;
-            color: #ffffff;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                Activity Log
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label for="userSelect">Select User:</label>
-                    <select class="form-control" id="userSelect">
-                        <option value="all">All Users</option>
-                        <?php foreach ($s as $key): ?>
-                            <option value="<?= esc($key->username) ?>"><?= esc($key->username) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Order</h1>
+        <nav></nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-body pt-3">
+                    <!-- Bordered Tabs -->
+                    <ul class="nav nav-tabs nav-tabs-bordered">
+                        <li class="breadcrumb-item active">
+                            <!-- Add your breadcrumb or header content here if needed -->
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-2">
+                        <div class="tab-pane fade show active profile-edit pt-3" id="profile-edit">
+                            <!-- Profile Edit Form -->
+                            <form method="post" action="<?= base_url('home/Update') ?>">
+                                <div class="mb-3 mt-3">
+                                    <label for="Deskripsi" class="form-label">Nama Pemesan</label>
+                                    <input class="form-control" id="Deskripsi" name="nama" value="<?= $sa->user ?>" readonly>
+                                </div>
+
+                                <div class="mb-3 mt-3">
+                                    <label for="Invoice" class="form-label">Tanggal order</label>
+                                    <input type="date" class="form-control" id="Invoice" name="Tanggal" value="<?= $sa->tanggal ?>" readonly>
+                                </div>
+                                <div class="mb-3 mt-3">
+                                    <label for="Invoice" class="form-label">Nama Petugas</label>
+                                    <input type="text" class="form-control" id="Invoice" name="petugas" value="<?= $sa->admin ?>" readonly>
+                                </div>
+
+                                <?php foreach ($te as $rr): ?>
+                                    <div class="row product">
+                                        <div class="col">
+                                            <div class="row align-items-center mb-3">
+                                                <div class="col-md-5 col-lg-5">
+                                                    <label for="jenis1" class="form-label">Menu Makanan</label>
+                                                    <select name="jenis1[]" class="form-control" onchange="updateTotalHarga()">
+                                                        <option value="<?= $rr->id_menu ?>" data-harga="<?= $menuPrices[$rr->id_menu]['harga'] ?>"><?= $rr->nama_Menu ?></option>
+                                                        <?php foreach($s as $key): ?>
+                                                            <option value="<?= $key->id_menu ?>" data-harga="<?= $key->harga_menu ?>"><?= $key->nama_Menu ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4 col-lg-4">
+                                                    <label for="totalMI" class="form-label">Total</label>
+                                                    <input class="form-control total-field" name="totalM[]" style="width: 100%;" value="<?= $rr->total_menu ?>" onchange="updateTotalHarga()">
+                                                </div>
+                                                <div class="col-auto delete-btn">
+                                                <div class="col-auto delete-btn">
+                                                <button type="button" class="btn btn-danger" onclick="Delete2ProductForm(this, <?= $rr->id_transaksi ?>)">X</button>
+                                                <button type="button" class="btn btn-warning" onclick="editProductForm(this, <?= $rr->id_transaksi ?>)">E</button>
+                                                </div>
+                                                </div>
+                                                <input type="hidden" name="id[]" value="<?= $rr->Nomor ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+
+                               
+
+                                <?php foreach ($te as $rr): ?>
+                                    <div class="row product">
+                                        <div class="col">
+                                            <div class="row align-items-center mb-3">
+                                                <div class="col-md-5 col-lg-5">
+                                                    <label for="jenis2" class="form-label">Menu Minuman</label>
+                                                    <select name="jenis2[]" class="form-control" onchange="updateTotalHarga()">
+                                                        <option value="<?= $rr->id_minuman ?>" data-harga="<?= $minumanPrices[$rr->id_minuman]['harga'] ?>"><?= $rr->nama_minuman ?></option>
+                                                        <?php foreach($t as $key): ?>
+                                                            <option value="<?= $key->id_minuman ?>" data-harga="<?= $key->harga_minuman ?>"><?= $key->nama_minuman ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4 col-lg-4">
+                                                    <label for="totalMI" class="form-label">Total</label>
+                                                    <input class="form-control total-field" name="totalMI[]" style="width: 100%;" value="<?= $rr->total_minuman ?>" onchange="updateTotalHarga()">
+                                                </div>
+                                                <div class="col-auto delete-btn">
+                                                <div class="col-auto delete-btn">
+                                                <button type="button" class="btn btn-danger" onclick="Delete2ProductForm(this, <?= $rr->id_transaksi ?>)">X</button>
+                                                <button type="button" class="btn btn-warning" onclick="editProductForm(this, <?= $rr->id_transaksi ?>)">E</button>
+                                                </div>
+                                                </div>
+                                                <input type="hidden" name="id[]" value="<?= $rr->Nomor ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+
+                              
+                                <div class="mb-3 mt-3">
+                                    <label for="totalHarga" class="form-label">Total Harga</label>
+                                    <input type="text" class="form-control" id="totalHarga" name="totalHarga" value="<?= $sa->total_harga ?>" readonly>
+                                    <div class="col-auto delete-btn">
+                                    <input type="hidden" name="id" value="<?= $sa->Nomor ?>">
+                                                <button type="submit" class="btn btn-success">U</button>
+                                                <button type="button" class="btn btn-success" onclick="window.location.href='<?= base_url('Home/TambahEdit/' .$sa->id_transaksi) ?>'">A</button>
+                                                </div>
+                                </div>
+                              
+
+                    
+                            </form>
+                        </div>
+                    </div><!-- End Bordered Tabs -->
                 </div>
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr style="font-weight: bold; color: white; font-size: larger;">
-                            <th>No</th>
-                            <th>Username</th>
-                            <th>Activity</th>
-                            <th>Description</th>
-                            <th>Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logTableBody">
-                        <?php 
-                        $no = 1; // Initialize the counter variable
-                        if (!empty($logs) && is_array($logs)): 
-                        ?>
-                            <?php foreach ($logs as $log): ?>
-                                <tr data-username="<?= esc($log['username']) ?>">
-                                    <td class="no-column"><?= $no++ ?></td>
-                                    <td><?= esc($log['username']) ?></td>
-                                    <td><?= esc($log['activity']) ?></td>
-                                    <td><?= esc($log['description']) ?></td>
-                                    <td><?= esc($log['timestamp']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="5" class="no-logs">No activity logs found</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
             </div>
         </div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Include Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Initialize Select2 on the user select dropdown
-            $('#userSelect').select2({
-                placeholder: "Select a user",
-                allowClear: true
-            });
+    </section>
+</main><!-- End #main -->
 
-            // Filter table rows based on selected user
-            $('#userSelect').on('change', function() {
-                var selectedUsername = $(this).val();
-                var logRows = $('#logTableBody tr');
-                var no = 1;
+<style>
+    .product {
+        margin-bottom: 20px;
+    }
 
-                logRows.each(function() {
-                    var row = $(this);
-                    if (selectedUsername === 'all' || row.data('username') === selectedUsername) {
-                        row.show();
-                        row.find('.no-column').text(no++);
-                    } else {
-                        row.hide();
-                    }
-                });
-            });
+    .product .form-group {
+        margin-bottom: 0;
+    }
+
+    .product .form-group:last-child {
+        margin-bottom: 15px;
+    }
+
+    .product select, .product textarea, .product input {
+        width: 100%;
+    }
+
+    .delete-btn {
+        margin-top: 35px;
+    }
+</style>
+
+<script>
+       const menuPrices = {
+        <?php foreach($s as $key): ?>
+            '<?= $key->id_menu ?>': {
+                harga: <?= $key->harga_menu ?>
+            },
+        <?php endforeach; ?>
+    };
+
+    const minumanPrices = {
+        <?php foreach($t as $key): ?>
+            '<?= $key->id_minuman ?>': {
+                harga: <?= $key->harga_minuman ?>
+            },
+        <?php endforeach; ?>
+    };
+
+    // Calculate initial total from PHP data
+    let initialTotalHarga = 0;
+    <?php foreach ($te as $rr): ?>
+        // Calculate for makanan
+        if (<?= $rr->id_menu ?>) {
+            initialTotalHarga += (menuPrices[<?= $rr->id_menu ?>]?.harga || 0) * (parseFloat('<?= $rr->total_menu ?>') || 0);
+        }
+
+        // Calculate for minuman
+        if (<?= $rr->id_minuman ?>) {
+            initialTotalHarga += (minumanPrices[<?= $rr->id_minuman ?>]?.harga || 0) * (parseFloat('<?= $rr->total_minuman ?>') || 0);
+        }
+    <?php endforeach; ?>
+
+    // Update Total Harga field on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('totalHarga').value = initialTotalHarga.toFixed(0); // Format as a plain number without commas
+    });
+
+   
+
+    function deleteProductForm(button) {
+        let productForm = button.closest('.product');
+        productForm.remove();
+        updateTotalHarga();
+       
+    }
+    function editProductForm(button, id) {
+        window.location.href = '<?= base_url('home/EditOA/') ?>/' + id;
+    }
+    function Delete2ProductForm(button, id) {
+        window.location.href = '<?= base_url('home/hapusOA/') ?>/' + id;
+    }
+      document.addEventListener('DOMContentLoaded', () => {
+        // Calculate the initial totalHarga based on existing PHP data
+        let totalHarga = 0;
+
+        <?php foreach ($te as $rr): ?>
+            // Calculate total for makanan
+            if (<?= $rr->id_menu ?>) {
+                const makananHarga = menuPrices[<?= $rr->id_menu ?>]?.harga || 0;
+                const makananJumlah = parseFloat('<?= $rr->total_menu ?>') || 0;
+                totalHarga += makananHarga * makananJumlah;
+            }
+
+            // Calculate total for minuman
+            if (<?= $rr->id_minuman ?>) {
+                const minumanHarga = minumanPrices[<?= $rr->id_minuman ?>]?.harga || 0;
+                const minumanJumlah = parseFloat('<?= $rr->total_minuman ?>') || 0;
+                totalHarga += minumanHarga * minumanJumlah;
+            }
+        <?php endforeach; ?>
+
+        // Set the initial value of the totalHarga field
+        document.getElementById('totalHarga').value = totalHarga.toFixed(0);
+
+        // Update totalHarga based on form changes
+        updateTotalHarga();
+    });
+
+    function updateTotalHarga() {
+        // Start from the existing value of totalHarga
+        let totalHarga = parseFloat(document.getElementById('totalHarga').value) || 0;
+
+        // Calculate total for makanan
+        document.querySelectorAll('#product-section-makanan .product').forEach(product => {
+            const select = product.querySelector('select');
+            const totalInput = product.querySelector('input[name="totalM[]"]');
+            const harga = menuPrices[select.value]?.harga || 0;
+            const jumlah = parseFloat(totalInput.value.replace(/\./g, '') || '0');
+
+            totalHarga += harga * (jumlah > 0 ? jumlah : 1); // Add to totalHarga, defaulting quantity to 1 if not provided
         });
-    </script>
-</body>
-</html>
+
+        // Calculate total for minuman
+        document.querySelectorAll('#product-section-minuman .product').forEach(product => {
+            const select = product.querySelector('select');
+            const totalInput = product.querySelector('input[name="totalMI[]"]');
+            const harga = minumanPrices[select.value]?.harga || 0;
+            const jumlah = parseFloat(totalInput.value.replace(/\./g, '') || '0');
+
+            totalHarga += harga * (jumlah > 0 ? jumlah : 1); // Add to totalHarga, defaulting quantity to 1 if not provided
+        });
+
+        // Update the totalHarga field
+        document.getElementById('totalHarga').value = totalHarga.toFixed(0); // Format as a plain number without commas
+    }
+</script>

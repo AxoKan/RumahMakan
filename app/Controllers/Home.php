@@ -40,37 +40,131 @@ class Home extends BaseController
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
         $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
-        $secretKey = '6LeAgCAqAAAAACi34dd-ob9stqzW69GDXnxPpLr7'; // Your secret key
-        $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$recaptchaResponse}");
-        $responseKeys = json_decode($response, true);
+        $backupCaptcha = $this->request->getPost('backup_captcha');
     
-        if (intval($responseKeys["success"]) !== 1) {
-            // If reCAPTCHA validation fails
-            session()->setFlashdata('error', 'Please complete the reCAPTCHA.');
-            return redirect()->to('home');
-        }
+        // Check if the server is online
+        if ($this->isOnline()) {
+            $secretKey = '6LeAgCAqAAAAACi34dd-ob9stqzW69GDXnxPpLr7'; // Your secret key
+            $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$recaptchaResponse");
+            $responseKeys = json_decode($response, true);
     
-        $model = new M_lelang();
-        $where = array(
-            'username' => $username,
-            'password' => md5($password)
-        );
-    
-        $cek = $model->getWhere('user', $where);
-        
-        if ($cek > 0) {
-            session()->set('username', $cek->username);
-            session()->set('id_user', $cek->id_user);
-            session()->set('level', $cek->level);
-    
-            // Log the login activity
-            $model->logActivity($cek->id_user, 'login', 'User logged in.');
-    
-            return redirect()->to('home/dashboard_L');
+            if (intval($responseKeys["success"]) !== 1) {
+                session()->setFlashdata('error', 'Please complete the reCAPTCHA.');
+                return redirect()->to('home');
+            }
         } else {
-            return redirect()->to('http://localhost:8080/home/login');
+            // Validate offline CAPTCHA
+            if (!empty($backupCaptcha)) {
+                if (!$this->validateOfflineCaptcha($backupCaptcha)) {
+                    session()->setFlashdata('error', 'Offline CAPTCHA validation failed.');
+                    return redirect()->to('home/login');
+                }
+            } else {
+                session()->setFlashdata('error', 'Please complete the offline CAPTCHA.');
+                return redirect()->to('home/login');
+            }
+        }
+        $model = new M_lelang();
+            $where = array(
+                'username' => $username,
+                'password' => md5($password)
+            );
+        
+            $cek = $model->getWhere('user', $where);
+        if ($cek > 0) {
+                    session()->set('username', $cek->username);
+                    session()->set('id_user', $cek->id_user);
+                    session()->set('level', $cek->level);
+            
+                    // Log the login activity
+                    $model->logActivity($cek->id_user, 'login', 'User logged in.');
+            
+                    return redirect()->to('home/dashboard_L');
+                } else {
+                    return redirect()->to('http://localhost:8080/home/login');
+                }
+    }
+    
+    // Function to check network connectivity
+    private function isOnline() {
+        $connected = @fsockopen("www.google.com", 80); 
+        // Check if a connection is made
+        if ($connected) {
+            fclose($connected);
+            return true;
+        } else {
+            return false;
         }
     }
+        private function validateOfflineCaptcha($captchaInput)
+        {
+            // Ambil CAPTCHA yang disimpan di session
+            $storedCaptcha = session()->get('captcha_code');
+    
+            // Bandingkan input pengguna dengan CAPTCHA yang disimpan (peka huruf besar/kecil)
+            return $captchaInput === $storedCaptcha;
+        }
+        public function generateCaptcha()
+        {
+            $code = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 6);
+    
+            // Store the CAPTCHA code in the session
+            session()->set('captcha_code', $code);
+    
+            // Generate the image
+            $image = imagecreatetruecolor(120, 40);
+            $bgColor = imagecolorallocate($image, 255, 255, 255);
+            $textColor = imagecolorallocate($image, 0, 0, 0);
+    
+            imagefilledrectangle($image, 0, 0, 120, 40, $bgColor);
+            imagestring($image, 5, 10, 10, $code, $textColor);
+    
+            // Set the content type header - in this case image/png
+            header('Content-Type: image/png');
+    
+            // Output the image
+            imagepng($image);
+    
+            // Free up memory
+            imagedestroy($image);
+
+    }
+    
+    // public function aksi_login() {
+    //     $username = $this->request->getPost('username');
+    //     $password = $this->request->getPost('password');
+    //     $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+    //     $secretKey = '6LeAgCAqAAAAACi34dd-ob9stqzW69GDXnxPpLr7'; // Your secret key
+    //     $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$recaptchaResponse}");
+    //     $responseKeys = json_decode($response, true);
+    
+    //     if (intval($responseKeys["success"]) !== 1) {
+    //         // If reCAPTCHA validation fails
+    //         session()->setFlashdata('error', 'Please complete the reCAPTCHA.');
+    //         return redirect()->to('home');
+    //     }
+    
+    //     $model = new M_lelang();
+    //     $where = array(
+    //         'username' => $username,
+    //         'password' => md5($password)
+    //     );
+    
+    //     $cek = $model->getWhere('user', $where);
+        
+    //     if ($cek > 0) {
+    //         session()->set('username', $cek->username);
+    //         session()->set('id_user', $cek->id_user);
+    //         session()->set('level', $cek->level);
+    
+    //         // Log the login activity
+    //         $model->logActivity($cek->id_user, 'login', 'User logged in.');
+    
+    //         return redirect()->to('home/dashboard_L');
+    //     } else {
+    //         return redirect()->to('http://localhost:8080/home/login');
+    //     }
+    // }
     
     
     
@@ -710,7 +804,7 @@ public function makan()
                 $model->logActivity($user_id, 'Menu', 'User Has Restored a Menu.');
                 $model->edit('menu', $isi, $where);
     
-                return redirect()->to('Home/makan');
+                return redirect()->to('Home/RestoreM');
                 // Redirect or do whatever you need after update
             } else {
                 return redirect()->to('home/notfound');
@@ -732,7 +826,7 @@ public function makan()
                     $model->logActivity($user_id, 'Menu', 'User Has Restored a Minuman.');
                     $model->edit('minuman', $isi, $where);
         
-                    return redirect()->to('Home/minuman');
+                    return redirect()->to('Home/RestoreMI');
                     // Redirect or do whatever you need after update
                 } else {
                     return redirect()->to('home/notfound');
@@ -1888,7 +1982,7 @@ public function TambahEdit($id)
             public function OrderK()
     {
         $userLevel = session()->get('level');
-        $allowedLevels = ['Petugas', 'Manager', 'admin','Koki'];
+        $allowedLevels = ['Koki'];
     
         if (in_array($userLevel, $allowedLevels)) {
     $model= new M_lelang();
@@ -1993,8 +2087,105 @@ public function activity_log()
         return redirect()->to('http://localhost:8080/home/error_404');
     }
 }
+public function RestoreM()
+    {
+        $userLevel = session()->get('level');
+        $allowedLevels = ['admin'];
+    
+        if (in_array($userLevel, $allowedLevels)) {
+    $model= new M_lelang();
+    $user_id = session()->get('id_user');
+    $logoData = $model->tampil('logo'); // Fetch all logos
+    $filteredLogo = array_filter($logoData, function($item) {
+        return $item->id_logo == 1; // Adjust this condition as needed
+    });
+    $data['satu'] = reset($filteredLogo);
+    $where=array('id_user'=>session()->get('id_user'));
+    $data['user']=$model->getWhere('user', $where);
 
+    $data['s'] = $model->tampil('menu', 'id_menu');
+    $model->logActivity($user_id, 'View', 'User view Restore Food Menu .');
+    echo view('header', $data);
+    echo view('menu_L',$data);
+    echo view('RestoreM',$data);
+    echo view('footer_L');
+} else {
+    return redirect()->to('home/notfound');
+}
+    }
+    public function RestoreMI()
+    {
+        $userLevel = session()->get('level');
+        $allowedLevels = ['admin'];
+    
+        if (in_array($userLevel, $allowedLevels)) {
+    $model= new M_lelang();
+    $user_id = session()->get('id_user');
+    $logoData = $model->tampil('logo'); // Fetch all logos
+    $filteredLogo = array_filter($logoData, function($item) {
+        return $item->id_logo == 1; // Adjust this condition as needed
+    });
+    $data['satu'] = reset($filteredLogo);
+    $where=array('id_user'=>session()->get('id_user'));
+    $data['user']=$model->getWhere('user', $where);
 
+    $data['s'] = $model->tampil('minuman', 'id_minuman');
+    $model->logActivity($user_id, 'View', 'User view Restore Drink Menu.');
+    echo view('header', $data);
+    echo view('menu_L',$data);
+    echo view('RestoreMI',$data);
+    echo view('footer_L');
 
+} else {
+    return redirect()->to('home/notfound');
+}
+    }
+ 
+    public function RestoreUser()
+{
+    $userLevel = session()->get('level');
+        $allowedLevels = ['admin'];
+    
+        if (in_array($userLevel, $allowedLevels)) {
+$model= new M_lelang();
+$user_id = session()->get('id_user');
+$logoData = $model->tampil('logo'); // Fetch all logos
+$filteredLogo = array_filter($logoData, function($item) {
+    return $item->id_logo == 1; // Adjust this condition as needed
+});
+$data['satu'] = reset($filteredLogo);
+$where=array('id_user'=>session()->get('id_user'));
+        $data['user']=$model->getWhere('user', $where);
 
+$data['s'] = $model->tampil('user', 'id_user');
+$model->logActivity($user_id, 'View', 'User view user Restore Menu.');
+ echo view('header', $data);
+echo view('menu_L',$data);
+echo view('RestoreUser',$data);
+echo view('footer_L');
+} else {
+    return redirect()->to('home/notfound');
+}
+}
+public function RestoreU($id){
+    $userLevel = session()->get('level');
+    $allowedLevels = ['Manager', 'admin'];
+
+    if (in_array($userLevel, $allowedLevels)) {
+        $model= new M_lelang();
+        $user_id = session()->get('id_user');
+        // Data to be updated
+        $isi = array('Soft' => 'Restore');
+    
+        // Condition for update
+        $where = array('id_user' => $id);
+    
+        // Call the edit function from the model
+        $model->logActivity($user_id, 'Admin', 'User Has Restore A user.');
+        $model->edit('user',$isi, $where);
+    return redirect()->to('Home/RestoreUser');
+} else {
+    return redirect()->to('home/notfound');
+}
+}
 }
