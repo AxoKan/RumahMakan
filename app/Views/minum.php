@@ -18,6 +18,117 @@
                       
       </nav>
     </div><!-- End Page Title -->
+    <?php
+$processedKodes = [];
+
+// Filter and display only the data with the passed id_minuman
+foreach ($t as $key) {
+  if ($key->id_minuman == $id_minuman && $key->Soft === "Restore") {
+        if (in_array($key->Kode, $processedKodes)) {
+            continue;
+        }
+
+        $processedKodes[] = $key->Kode;
+        $formattedHarga = 'Rp ' . number_format($key->harga_menu, 0, ',', '.');
+        ?>
+    <section class="section">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form action="<?= base_url('home/RestoreEMI') ?>" method="post">
+                            <!-- First Row -->
+                            <div class="row g-2">
+                                <div class="col-md-2">
+                                    <label for="kodeMinuman<?= $key->Kode ?>" class="form-label">Kode Minuman</label>
+                                    <input type="text" class="form-control form-control-sm" id="kode<?= $key->Kode ?>" value="<?= htmlspecialchars($key->Kode) ?>" name="kode" readonly>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="kategoriMinuman<?= $key->Kode ?>" class="form-label">Kategori</label>
+                                    <input type="text" class="form-control form-control-sm" id="kategori<?= $key->Kode ?>" value="<?= htmlspecialchars($key->Kategory) ?>" name="Kategory" readonly>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="namaMinuman<?= $key->Kode ?>" class="form-label">Nama Minuman</label>
+                                    <input type="text" class="form-control form-control-sm" id="namaMinuman<?= $key->Kode ?>" value="<?= htmlspecialchars($key->nama_minuman) ?>" name="nama" readonly>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="hargaMinuman<?= $key->Kode ?>" class="form-label">Drink Cost</label>
+                                    <input type="text" class="form-control form-control-sm" id="hargaMinuman<?= $key->Kode ?>" value="<?= htmlspecialchars($key->harga_minuman) ?>" name="harga" readonly>
+                                    <input type="hidden" name="hargaMinumanRaw" value="<?= $key->harga_menu ?>">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="stokMinuman<?= $key->Kode ?>" class="form-label">Stok</label>
+                                    <input type="number" class="form-control form-control-sm" id="stokMinuman<?= $key->Kode ?>" value="<?= htmlspecialchars($key->stok) ?>" name="stok" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Arrow Icon -->
+                            <div class="row justify-content-center my-2">
+                                <div class="col-auto">
+                                    <i class="bx bx-down-arrow-alt" style="font-size: 1.5rem;"></i> <!-- Smaller arrow icon -->
+                                </div>
+                            </div>
+                            <?php
+    }
+}
+?>
+                            <?php
+$processedKodes = [];
+
+// Filter and display only the data with the passed id_minuman
+foreach ($s as $key) {
+    if ($key->id_minuman == $id_minuman && $key->Soft === "Restore") {
+        if (in_array($key->Kode, $processedKodes)) {
+            continue;
+        }
+
+        $processedKodes[] = $key->Kode;
+        $formattedHarga = 'Rp ' . number_format($key->harga_menu, 0, ',', '.');
+        ?>
+                            <!-- Second Row -->
+                            <div class="row g-2">
+                                <div class="col-md-2">
+                                    <label for="kodeMinuman<?= $key->Kode ?>" class="form-label">Kode Minuman</label>
+                                    <input type="text" class="form-control form-control-sm" id="kode<?= $key->Kode ?>" value="<?= htmlspecialchars($key->Kode) ?>" name="kodea" readonly>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="kategoriMinuman<?= $key->Kode ?>" class="form-label">Kategori</label>
+                                    <input type="text" class="form-control form-control-sm" id="kategori<?= $key->Kode ?>" value="<?= htmlspecialchars($key->Kategory) ?>" name="Kategorya" readonly>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="namaMinuman<?= $key->Kode ?>" class="form-label">Nama Minuman</label>
+                                    <input type="text" class="form-control form-control-sm" id="namaMinuman<?= $key->Kode ?>" value="<?= htmlspecialchars($key->nama_minuman) ?>" name="namaa" readonly>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="hargaMinuman<?= $key->Kode ?>" class="form-label">Drink Cost</label>
+                                    <input type="text" class="form-control form-control-sm" id="hargaMinuman<?= $key->Kode ?>" value="<?= htmlspecialchars($key->harga_minuman) ?>" name="hargaa" readonly>
+                                    <input type="hidden" name="hargaMinumanRaw" value="<?= $key->harga_menu ?>">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="stokMinuman<?= $key->Kode ?>" class="form-label">Stok</label>
+                                    <input type="number" class="form-control form-control-sm" id="stokMinuman<?= $key->Kode ?>" value="<?= htmlspecialchars($key->stok) ?>" name="stoka" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Centered Submit Button -->
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100">Restore</button>
+                                    <input type="hidden" name="id" value="<?= $key->id_minuman ?>">
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+    <?php
+    }
+}
+?>
 
     <section class="section">
       <div class="row justify-content-center">

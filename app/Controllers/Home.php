@@ -713,33 +713,38 @@ public function editO($id)
 // }
 // }
 
-public function makan()
-    {
-        $userLevel = session()->get('level');
-        $allowedLevels = ['Petugas', 'Manager', 'admin','Koki'];
-    
-        if (in_array($userLevel, $allowedLevels)) {
-    $model= new M_lelang();
-    $user_id = session()->get('id_user');
-    $logoData = $model->tampil('logo'); // Fetch all logos
-    $filteredLogo = array_filter($logoData, function($item) {
-        return $item->id_logo == 1; // Adjust this condition as needed
-    });
-    $data['satu'] = reset($filteredLogo);
-    $where=array('id_user'=>session()->get('id_user'));
-    $data['user']=$model->getWhere('user', $where);
+public function makan($id_menu = null)
+{
+    $userLevel = session()->get('level');
+    $allowedLevels = ['Petugas', 'Manager', 'admin', 'Koki'];
 
-    $data['s'] = $model->tampil('menu', 'id_menu');
-    $model->logActivity($user_id, 'View', 'User view Food Menu .');
-    echo view('header', $data);
-    echo view('menu_L',$data);
-    echo view('makan',$data);
-    echo view('footer_L');
-} else {
-    return redirect()->to('home/notfound');
-}
+    if (in_array($userLevel, $allowedLevels)) {
+        $model = new M_lelang();
+        $user_id = session()->get('id_user');
+        $logoData = $model->tampil('logo');
+        $filteredLogo = array_filter($logoData, function($item) {
+            return $item->id_logo == 1;
+        });
+        $data['satu'] = reset($filteredLogo);
+        $where = array('id_user' => session()->get('id_user'));
+        $data['user'] = $model->getWhere('user', $where);
+
+        // Pass id_menu to the view
+        $data['id_menu'] = $id_menu;
+        $data['s'] = $model->tampil('menu', 'id_menu');
+        $data['t'] = $model->tampil('menu_backup', 'id_menu');
+        $model->logActivity($user_id, 'View', 'User view Food Menu.');
+
+        echo view('header', $data);
+        echo view('menu_L', $data);
+        echo view('makan', $data);
+        echo view('footer_L');
+    } else {
+        return redirect()->to('home/notfound');
     }
-    public function minum()
+}
+
+    public function minum($id_minuman = null)
     {
         $userLevel = session()->get('level');
         $allowedLevels = ['Petugas', 'Manager', 'admin','Koki'];
@@ -754,8 +759,9 @@ public function makan()
     $data['satu'] = reset($filteredLogo);
     $where=array('id_user'=>session()->get('id_user'));
     $data['user']=$model->getWhere('user', $where);
-
+    $data['id_minuman'] = $id_minuman;
     $data['s'] = $model->tampil('minuman', 'id_minuman');
+    $data['t'] = $model->tampil('minuman_backup', 'id_minuman');
     $model->logActivity($user_id, 'View', 'User view Drink Menu.');
     echo view('header', $data);
     echo view('menu_L',$data);
@@ -781,6 +787,7 @@ public function makan()
         
             $model->logActivity($user_id, 'Menu', 'User Has Deleted a Menu.');
             $model->edit('menu', $isi, $where);
+            $model->edit('menu_backup', $isi, $where);
 
             return redirect()->to('Home/makan');
             // Redirect or do whatever you need after update
@@ -803,6 +810,7 @@ public function makan()
             
                 $model->logActivity($user_id, 'Menu', 'User Has Restored a Menu.');
                 $model->edit('menu', $isi, $where);
+                $model->edit('menu_backup', $isi, $where);
     
                 return redirect()->to('Home/RestoreM');
                 // Redirect or do whatever you need after update
@@ -825,7 +833,7 @@ public function makan()
                 
                     $model->logActivity($user_id, 'Menu', 'User Has Restored a Minuman.');
                     $model->edit('minuman', $isi, $where);
-        
+                     $model->edit('minuman_backup', $isi, $where);
                     return redirect()->to('Home/RestoreMI');
                     // Redirect or do whatever you need after update
                 } else {
@@ -848,6 +856,7 @@ public function makan()
             // Call the edit function from the model
             $model->logActivity($user_id, 'Drink', 'User Has Deleted a Drink.');
             $model->edit('minuman', $isi, $where);
+            $model->edit('minuman_backup', $isi, $where);
             return redirect()->to('Home/minum');
     } else {
         return redirect()->to('home/notfound');
@@ -878,9 +887,50 @@ echo view('footer_L');
     return redirect()->to('home/notfound');
 }
     }
+    // public function aksi_Medit()
+    // {
+    //     $model = new M_lelang();
+    //     $user_id = session()->get('id_user');
+    //     $a = $this->request->getPost('nama');
+    //     $b = $this->request->getPost('harga');
+    //     $c = $this->request->getPost('stok');
+    //     $Kategory = $this->request->getPost('Kategory');
+    //     $id = $this->request->getPost('id');
+    
+    //     $backupWhere = ['id_menu' => $id];
+    //     $existingBackup = $model->getWhere('menu_Backup', $backupWhere);
+    
+    //     if ($existingBackup) {
+    //         $model->hapus('menu_Backup', $backupWhere);
+    //     }
+    
+    //     $produkLama = $model->getProductById($id);
+    //     $backupData = (array) $produkLama;
+    
+    //     $isi = array(
+    //         'nama_menu' => $a,
+    //         'Kategory' => $Kategory,
+    //         'harga_menu' => $b,
+    //         'Soft' => 'Restore',
+    //         'stok' => $c
+    //     );
+    
+    //     $model->logActivity($user_id, 'Menu', 'User Has Updated a Menu.');
+    
+    //     $where = array('id_menu' => $id);
+    //     $model->edit('menu', $isi, $where);
+    
+    //     // Pass the id_menu to the makan method
+    //     return redirect()->to('home/makan/' . $id);
+    // }
+    
     public function aksi_Medit()
-{
-    $model = new M_lelang(); // Assuming you instantiate the model like this
+    {
+        $userLevel = session()->get('level');
+        $allowedLevels = ['Manager', 'admin'];
+    
+        if (in_array($userLevel, $allowedLevels)) {
+        $model = new M_lelang(); // Assuming you instantiate the model like this
         $user_id = session()->get('id_user');
         // Retrieve data from the POST request
         $a = $this->request->getPost('nama');
@@ -888,101 +938,105 @@ echo view('footer_L');
         $c = $this->request->getPost('stok');
         $Kategory = $this->request->getPost('Kategory');
         $id = $this->request->getPost('id');
-
-    // Cek apakah ada data dengan id_produk yang sama di produk_backup
-    $backupWhere = ['id_menu' => $id];
-    $existingBackup = $model->getWhere('menu_Backup', $backupWhere);
-
-    if ($existingBackup) {
-        // Hapus data lama di produk_backup jika ada
-        $model->hapus('menu_Backup', $backupWhere);
-    }
-
-    // Ambil data produk lama berdasarkan id_produk
-    $produkLama = $model->getProductById($id);
-    
-    // Simpan data produk lama ke tabel produk_backup
-    $backupData = (array) $produkLama;  // Ubah objek menjadi array
-    $model->tambah('menu_Backup', $backupData);
-
-    // Menyiapkan data yang akan di-update
-    $isi = array(
-                'nama_menu' => $a,
-                'Kategory' =>  $Kategory,
-                'harga_menu' => $b,
-                'Soft' => 'Restore',
-                'stok' => $c
-            );
-
-    // Memeriksa apakah ada file foto baru
-    $model->logActivity($user_id, 'Menu', 'User Has Updated a Menu.');
-
-    // Update data produk di database
-    $where = array('id_menu' => $id);
-    $model->edit('menu', $isi, $where);
-
-    return redirect()->to('home/makan');
-}
-    // public function aksi_Medit()
-    // {
-    //     $userLevel = session()->get('level');
-    //     $allowedLevels = ['Manager', 'admin'];
-    
-    //     if (in_array($userLevel, $allowedLevels)) {
-    //     $model = new M_lelang(); // Assuming you instantiate the model like this
-    //     $user_id = session()->get('id_user');
-    //     // Retrieve data from the POST request
-    //     $a = $this->request->getPost('nama');
-    //     $b = $this->request->getPost('harga');
-    //     $c = $this->request->getPost('stok');
-    //     $Kategory = $this->request->getPost('Kategory');
-    //     $id = $this->request->getPost('id');
        
-    //     // Define the where clause
-    //     $where = array('id_menu' => $id);
+        // Define the where clause
+        $where = array('id_menu' => $id);
     
-    //     // Data to be updated
-    //     $isi = array(
-    //         'nama_menu' => $a,
-    //         'Kategory' =>  $Kategory,
-    //         'harga_menu' => $b,
-    //         'Soft' => 'Restore',
-    //         'stok' => $c
-    //     );
+        // Data to be updated
+        $isi = array(
+            'nama_menu' => $a,
+            'Kategory' =>  $Kategory,
+            'harga_menu' => $b,
+            'Soft' => 'Restore',
+            'stok' => $c
+        );
     
-    //     // Perform the update operation
-    //     $model->logActivity($user_id, 'Menu', 'User Has Updated a Menu.');
-    //     $model->edit('menu', $isi, $where);
+        // Perform the update operation
+        $model->logActivity($user_id, 'Menu', 'User Has Updated a Menu.');
+        $model->edit('menu', $isi, $where);
     
-    //     // Redirect to the desired page
-    //     return redirect()->to('Home/makan');
-    // } else {
-    //     return redirect()->to('home/notfound');
-    // }
-    // }
-    public function Restore_E_menu($id)
-{
-    $model = new M_lelang();
-    
-    // Ambil data dari tabel produk_backup berdasarkan id_produk
-    $backupData = $model->getWhere('menu_Backup', ['id_menu' => $id]);
-
-    if ($backupData) {
-        // Konversi data backup menjadi array
-        $restoreData = (array) $backupData;
-
-        // Hapus id_produk dari array karena id_produk tidak perlu di-update
-        unset($restoreData['id_menu']);
-
-        // Update data di tabel produk dengan data dari produk_backup
-        $model->edit('menu', $restoreData, ['id_menu' => $id]);
-
-        // Hapus data dari tabel produk_backup setelah di-restore
-        $model->hapus('menu_Backup', ['id_menu' => $id]);
+        // Redirect to the desired page
+        return redirect()->to('home/makan/' . $id);
+    } else {
+        return redirect()->to('home/notfound');
     }
-
-    return redirect()->to('home/hisproduk');
-}
+    }
+    public function RestoreEM()
+    {
+        $userLevel = session()->get('level');
+        $allowedLevels = ['Manager', 'admin'];
+    
+        if (in_array($userLevel, $allowedLevels)) {
+        $model = new M_lelang(); // Assuming you instantiate the model like this
+        $user_id = session()->get('id_user');
+        $d = $this->request->getPost('kode');
+        $a = $this->request->getPost('nama');
+        $b = $this->request->getPost('harga');
+        $c = $this->request->getPost('stok');
+        $Kategory = $this->request->getPost('Kategory');
+        $id = $this->request->getPost('id');
+       
+        // Define the where clause
+        $where = array('id_menu' => $id);
+    
+        // Data to be updated
+        $isi = array(
+            'Kode' => $d,
+            'nama_menu' => $a,
+            'Kategory' =>  $Kategory,
+            'harga_menu' => $b,
+            'Soft' => 'Restore',
+            'stok' => $c
+        );
+    
+        // Perform the update operation
+        $model->logActivity($user_id, 'Menu', 'User Has Restore updated Menu.');
+        $model->edit('menu', $isi, $where);
+    
+        print_r($isi);
+        return redirect()->to('home/makan');
+    } else {
+        return redirect()->to('home/notfound');
+    }
+    }
+    public function RestoreEMI()
+    {
+        $userLevel = session()->get('level');
+        $allowedLevels = ['Manager', 'admin'];
+    
+        if (in_array($userLevel, $allowedLevels)) {
+        $model = new M_lelang(); // Assuming you instantiate the model like this
+        $user_id = session()->get('id_user');
+        $d = $this->request->getPost('kode');
+        $a = $this->request->getPost('nama');
+        $b = $this->request->getPost('harga');
+        $c = $this->request->getPost('stok');
+        $Kategory = $this->request->getPost('Kategory');
+        $id = $this->request->getPost('id');
+       
+        // Define the where clause
+        $where = array('id_minuman' => $id);
+    
+        // Data to be updated
+        $isi = array(
+            'Kode' => $d,
+            'nama_minuman' => $a,
+            'Kategory' =>  $Kategory,
+            'harga_minuman' => $b,
+            'Soft' => 'Restore',
+            'stok' => $c
+        );
+    
+        // Perform the update operation
+        $model->logActivity($user_id, 'Drink', 'User Has Restore updated Drink.');
+        $model->edit('minuman', $isi, $where);
+    
+        print_r($isi);
+        return redirect()->to('Home/minum');
+    } else {
+        return redirect()->to('home/notfound');
+    }
+    }
     public function t_makan()
     {
         $userLevel = session()->get('level');
@@ -1045,6 +1099,7 @@ echo view('footer_L');
         // Perform the update operation
         $model->logActivity($user_id, 'Menu', 'User Has Added a Food Menu.');
         $model->tambah('menu', $isi, $where);
+        $model->tambah('menu_backup', $isi, $where);
     
         // Redirect to the desired page
         return redirect()->to('Home/makan');
@@ -1107,13 +1162,14 @@ echo view('footer_L');
                 'Kategory' => $Kategory,
                 'nama_minuman' => $a,
                 'harga_minuman' => $b,
-                'stok' => $c
+                'stok' => $c,
+                'Soft' => "Restore"
             );
     
             print_r($isi);
             $model->logActivity($user_id, 'Drink', 'User Has Added a Drink.');
             $model->tambah('minuman', $isi, $where);
-    
+            $model->tambah('minuman_backup', $isi, $where);
             // Redirect to the desired page
             return redirect()->to('Home/minum');
         } else {
@@ -1180,7 +1236,7 @@ echo view('footer_L');
                 $model->edit('minuman', $isi, $where);
             
                 // Redirect to the desired page
-                return redirect()->to('Home/minum');
+                return redirect()->to('home/minum/' . $id);
             } else {
                 return redirect()->to('home/notfound');
             }
